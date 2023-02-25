@@ -132,7 +132,7 @@ jan_01_2022 = 2459580.500000;
 % Set possible start and end times
 dif1 = 1; %difference
 dif2 = 1;
-startdate = jan_01_2022;
+startdate = jan_01_2017;
 t0_1Is = (jan_01_2017 - startdate):dif1:(dec_31_2017 - startdate); %day
 tf_1Is = (aug_01_2017 - startdate):dif1:(jan_01_2019 - startdate); %day
 t0_2Is = (jan_01_2017 - startdate):dif2:(jul_31_2020 - startdate); %day
@@ -317,7 +317,7 @@ fprintf('\nDelta-V Calculations for 2I Complete\n');
 fprintf('\n\nRUN COMPLETE\n\n');
 
 % Plotting
-plotting1 = DepartureDeltaVs1I;
+plotting1 = DeltaVsMatrix1I;
 plotting2 = DeltaVsMatrix1I;
 [nr1I,nc1I] = size(DeltaVsMatrix1I);
 for jj = 1:nr1I
