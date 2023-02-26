@@ -1,4 +1,4 @@
-function [v1_vec, v2_vec,check1] = LambertSolver_Izzo(r1_vec, r2_vec, TOF, nOrbits, mu)
+function [v1_vec, v2_vec] = LambertSolver_ILBG(r1_vec, r2_vec, TOF, nOrbits, mu)
 
 %% Statement
 % This solver is based off of Rody Oldenhuis' code, which utilizes Izzo's
@@ -19,7 +19,7 @@ function [v1_vec, v2_vec,check1] = LambertSolver_Izzo(r1_vec, r2_vec, TOF, nOrbi
 
 %% Citation of Oldenhuis' code
 % Rody Oldenhuis, orcid.org/0000-0002-3162-3660. "Lambert" <version>,
-% <Feb 26, 2023>. MATLAB Robust solver for Lambert's
+% <date you last used it>. MATLAB Robust solver for Lambert's
 % orbital-boundary value problem.
 % https://nl.mathworks.com/matlabcentral/fileexchange/26348
 
@@ -30,22 +30,17 @@ function [v1_vec, v2_vec,check1] = LambertSolver_Izzo(r1_vec, r2_vec, TOF, nOrbi
 %   Size: [1x3] or [3x1]
 % nOrbits: Number of orbits to complete.
 %   Size: [1x1]
-% TOF: Time of flight in [s] or [day].
+% TOF: Time of flight in [days].
 %   Size: [1x1]
-% mu: Standard Gravitational Parameter of the central body in [km3/s2] of [AU3/day2].
+% mu: Standard Gravitational Parameter of the central body in [km3/s2].
 %   Size: [1x1]
 
-% v1_vec: Initial velocity vector in [km/s] or [AU/day].
+% v1_vec: Initial velocity vector in [km/s].
 %   Size: [1x3] or [3x1]
-% v2_vec: Final velocity vector in [km/s] or [AU/day].
+% v2_vec: Final velocity vector in [km/s].
 %   Size: [1x3] or [3x1]
-
-% NOTE: As long as the TOF and r_vecs have units matching exactly that of the
-% standard gravitational parameter, mu, then this code will work.
-
 
 %% Preparation of position vectors
-
 % Ensure that r1_vec and r2_vec are column vectors
 [r1_rows,r1_cols] = size(r1_vec);
 [r2_rows,r2_cols] = size(r2_vec);
@@ -56,26 +51,29 @@ if r2_rows < r2_cols
     r2_vec = transpose(r2_vec);
 end
 
-
 % Calculate norms
-r1 = norm(r1_vec); %r2 = norm(r2_vec);
+r1 = norm(r1_vec); r2 = norm(r2_vec);
+
+% Calculate unit vectors
+%r1_vecUnit = r1_vec/r1;
+r2_vecUnit = r2_vec/r2;
 
 %% Initial values
 tolerance = 1e-14;
-check1 = 0;
-%day2sec = 86400; %seconds/day
+check1 = false;
+day2sec = 86400; %seconds/day
 
 % Nondimensionalize by normalizing to initial vector.
 r1_vecND = r1_vec/r1; %[ND]
 r2_vecND = r2_vec/r1; %[ND]
 r2_ND = norm(r2_vecND); %[ND]
-V = sqrt(mu/r1); %orbital velocity [km/s] or [AU/day]
+V = sqrt(mu/r1); %orbital velocity [km/s]
 T = r1/V; %time [s]
-TOF = TOF/T; %translate Time of Flight to seconds, then nondimensionalize.
+TOF = TOF*day2sec/T; %translate Time of Flight to seconds, then nondimensionalize.
 %   May no longer be positive.
 
 % Ensure within bounds
-dtheta = acos( max(-1, min(1, dot(r1_vecND,r2_vecND)/r2_ND)));
+dtheta = acos( max(-1, min(1, dot(r1_vec,r2_vec)/r2_ND)));
 % Note: Appears to be finding the transfer angle. However, this differs
 % from what I find in Vallado and Curtis' books. That would be:
 % dtheta = dot(r1vec,r2_vec)/(r1*r2)
@@ -111,13 +109,10 @@ lambda = sqrt(r2_ND)*cos(dtheta/2)/s;
     % This can be found on page 5 of Izzo's paper. Again, modified for ND.
 
 % Nondimensionalize TOF
-%TOF_ND = sqrt(2*mu/(s^3))*TOF;
+TOF_ND = sqrt(2*mu/(s^3))*TOF;
 
 % Cross-product
-%cr1r2_vec = cross(r1_vecND, r2_vecND);
-cr1r2_vec = [r1_vecND(2)*r2_vecND(3) - r1_vecND(3)*r2_vecND(2),...
-    r1_vecND(3)*r2_vecND(1) - r1_vecND(1)*r2_vecND(3),...
-    r1_vecND(1)*r2_vecND(2) - r1_vecND(2)*r2_vecND(1)];
+cr1r2_vec = cross(r1_vecND, r2_vecND);
 cr1r2 = norm(cr1r2_vec); %magnitude
 cr1r2_uv = cr1r2_vec/cr1r2; %unit vector
 
@@ -215,19 +210,22 @@ while err > tolerance
     % Update error
     err = abs(x1 - x_temp);
 
-    % Check
     if it > 15
-        check1 = 1;
-        break
+        check1 = true;
+        break;
     end
+end
 
+% If Newton method fails, use Lancaster & Blanchard instead
+if check1
+    % ADD HERE
 end
 
 % Convert x
 if nOrbits == 0
     x = exp(x_temp) - 1;
 else
-    x = atan(x_temp)*2/pi;
+    x = atan(x_temp)*2*pi;
 end
 
 % Solve semimajor axis
@@ -235,38 +233,29 @@ a = a_min/(1-x^2);
 
 % Solving psi and eta (see Izzo, p. 6)
 if x < 1 % Ellipse
-    alpha = 2*acos(max(-1, min(1, x)));
+    alpha = 2*acos(max(-1, min(1, x2)));
     beta = long_way*2*asin(sqrt((s-c)/2/a));
     psi = (alpha-beta)/2;
-    eta2 = 2*a*sin(psi)^2/s;
-    eta  = sqrt(eta2);
+    eta = sqrt(2*a*sin(psi)^2/s);
 else % Hyperbola
     alpha = 2*acosh(x);
     beta = long_way*2*asinh(sqrt((c-s)/2/a));
         % Note: Earlier, this was (s-c) since there was an extra negative.
     psi = (alpha-beta)/2;
-    eta2 = -2*a*sinh(psi)^2/s;
-    eta = sqrt(eta2);
+    eta = sqrt(-2*a*sinh(psi)^2/s);
 end
 
-% Update unit vector (see Izzo p. 15)
-ih = long_way * cr1r2_uv;
-
-% Unit vector for r2_vecND
-r2_uv = r2_vecND/r2_ND;
-
 % Compute v1_vec and v2_vec following remaining algorithm on Izzo p.15
-crsprd1 = cross(ih,r1_vecND);
-crsprd2 = cross(ih,r2_uv);
-
-Vr1 = 1/eta/sqrt(a_min) * (2*lambda*a_min - lambda - x*eta);
-Vt1 = sqrt(r2_ND/a_min/eta2 * sin(dtheta/2)^2);
-
+ih = cr1r2_uv * long_way;
+it1 = cross(ih,r1_vecND);
+it2 = cross(ih,r2_vecUnit);
+Vr1 = 1/(eta*sqrt(a_min))*(2*lambda*a_min - lambda - x*eta);
+Vt1 = sqrt(r2_ND/(a_min*eta^2)*sin(dtheta/2)^2);
 Vt2 = Vt1/r2_ND;
 Vr2 = (Vt1 - Vt2)/tan(dtheta/2) - Vr1;
+v1_vec = (Vr1*r1_vecND + Vt1*it1)*V;
+v2_vec = (Vr2*r2_vecUnit + Vt2*it2)*V;
 
-v1_vec = (Vr1*r1_vecND + Vt1*crsprd1')*V;
-v2_vec = (Vr2*r2_uv + Vt2*crsprd2')*V;
 
 end
 

@@ -93,9 +93,9 @@ for ii = 1:3
     elseif ii == 2
         fprintf('\n\n2I Orbital Elements:');
     elseif ii == 3
-        fprintf('\n\nrE Orbital Elements:');
+        fprintf('\n\nE Orbital Elements:');
     else
-        fprintf('INVALID INPUT. DISREGARD THE FOLLOWING\n\n');
+        fprintf('\nINVALID INPUT. DISREGARD THE FOLLOWING\n\n');
     end
 
     fprintf('\n Angular momentum (AUˆ2/day) = %g', coe(1))
@@ -168,7 +168,7 @@ else
 end
 
 
-fprintf('%g Departure State Vectors Calculated...\n', length(t0_1Is));
+fprintf('\n%g Departure State Vectors Calculated...\n', length(t0_1Is));
 
 % Produce state vectors of 'Oumouamoua and Borisov for each arrival date (km and km/s)
 rf1Is = zeros(3, length(tf_1Is)); %Initialize matrix of possible r11Is
@@ -254,7 +254,7 @@ for it3 = 1:length(t0_1Is)
         DepartureDeltaVs1I(it3,it4) = DepartureDeltaV;
         ArrivalDeltaVs1I(it3,it4) = ArrivalDeltaV;
         DeltaVsMatrix1I(it3,it4) = TotalDeltaV;
-        checks(it3,it4) = check1;
+        %checks(it3,it4) = check1;
     end
 end
 fprintf('\nDelta-V Calculations for 1I Complete\n');

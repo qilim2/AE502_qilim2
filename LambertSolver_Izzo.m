@@ -1,4 +1,4 @@
-function [v1_vec, v2_vec,check1] = LambertSolver_Izzo(r1_vec, r2_vec, TOF, nOrbits, mu)
+function [v1_vec, v2_vec] = LambertSolver_Izzo(r1_vec, r2_vec, TOF, nOrbits, mu)
 
 %% Statement
 % This solver is based off of Rody Oldenhuis' code, which utilizes Izzo's
@@ -19,7 +19,7 @@ function [v1_vec, v2_vec,check1] = LambertSolver_Izzo(r1_vec, r2_vec, TOF, nOrbi
 
 %% Citation of Oldenhuis' code
 % Rody Oldenhuis, orcid.org/0000-0002-3162-3660. "Lambert" <version>,
-% <Feb 26, 2023>. MATLAB Robust solver for Lambert's
+% <date you last used it>. MATLAB Robust solver for Lambert's
 % orbital-boundary value problem.
 % https://nl.mathworks.com/matlabcentral/fileexchange/26348
 
@@ -30,23 +30,19 @@ function [v1_vec, v2_vec,check1] = LambertSolver_Izzo(r1_vec, r2_vec, TOF, nOrbi
 %   Size: [1x3] or [3x1]
 % nOrbits: Number of orbits to complete.
 %   Size: [1x1]
-% TOF: Time of flight in [s] or [day].
+% TOF: Time of flight in [days].
 %   Size: [1x1]
-% mu: Standard Gravitational Parameter of the central body in [km3/s2] of [AU3/day2].
+% mu: Standard Gravitational Parameter of the central body in [km3/s2].
 %   Size: [1x1]
 
-% v1_vec: Initial velocity vector in [km/s] or [AU/day].
+% v1_vec: Initial velocity vector in [km/s].
 %   Size: [1x3] or [3x1]
-% v2_vec: Final velocity vector in [km/s] or [AU/day].
+% v2_vec: Final velocity vector in [km/s].
 %   Size: [1x3] or [3x1]
-
-% NOTE: As long as the TOF and r_vecs have units matching exactly that of the
-% standard gravitational parameter, mu, then this code will work.
-
 
 %% Preparation of position vectors
-
 % Ensure that r1_vec and r2_vec are column vectors
+
 [r1_rows,r1_cols] = size(r1_vec);
 [r2_rows,r2_cols] = size(r2_vec);
 if r1_rows < r1_cols
@@ -58,20 +54,20 @@ end
 
 
 % Calculate norms
-r1 = norm(r1_vec); %r2 = norm(r2_vec);
+r1 = norm(r1_vec); r2 = norm(r2_vec);
 
 %% Initial values
 tolerance = 1e-14;
-check1 = 0;
-%day2sec = 86400; %seconds/day
+%check1 = false;
+day2sec = 86400; %seconds/day
 
 % Nondimensionalize by normalizing to initial vector.
 r1_vecND = r1_vec/r1; %[ND]
 r2_vecND = r2_vec/r1; %[ND]
 r2_ND = norm(r2_vecND); %[ND]
-V = sqrt(mu/r1); %orbital velocity [km/s] or [AU/day]
+V = sqrt(mu/r1); %orbital velocity [km/s]
 T = r1/V; %time [s]
-TOF = TOF/T; %translate Time of Flight to seconds, then nondimensionalize.
+TOF = TOF*day2sec/T; %translate Time of Flight to seconds, then nondimensionalize.
 %   May no longer be positive.
 
 % Ensure within bounds
@@ -111,7 +107,7 @@ lambda = sqrt(r2_ND)*cos(dtheta/2)/s;
     % This can be found on page 5 of Izzo's paper. Again, modified for ND.
 
 % Nondimensionalize TOF
-%TOF_ND = sqrt(2*mu/(s^3))*TOF;
+TOF_ND = sqrt(2*mu/(s^3))*TOF;
 
 % Cross-product
 %cr1r2_vec = cross(r1_vecND, r2_vecND);
@@ -215,12 +211,6 @@ while err > tolerance
     % Update error
     err = abs(x1 - x_temp);
 
-    % Check
-    if it > 15
-        check1 = 1;
-        break
-    end
-
 end
 
 % Convert x
@@ -249,24 +239,35 @@ else % Hyperbola
     eta = sqrt(eta2);
 end
 
-% Update unit vector (see Izzo p. 15)
+% Update unit vector
 ih = long_way * cr1r2_uv;
 
 % Unit vector for r2_vecND
-r2_uv = r2_vecND/r2_ND;
+r2n = r2_vecND/r2_ND;
+%disp(r2n)
 
 % Compute v1_vec and v2_vec following remaining algorithm on Izzo p.15
 crsprd1 = cross(ih,r1_vecND);
-crsprd2 = cross(ih,r2_uv);
-
+%{
+crsprd1 = [ih(2)*r1_vecND(3)-ih(3)*r1_vecND(2),...
+           ih(3)*r1_vecND(1)-ih(1)*r1_vecND(3),...
+           ih(1)*r1_vecND(2)-ih(2)*r1_vecND(1)];
+           %}
+crsprd2 = cross(ih,r2n);
+%{
+crsprd2 = [ih(2)*r2n(3)-ih(3)*r2n(2),...
+           ih(3)*r2n(1)-ih(1)*r2n(3),...
+           ih(1)*r2n(2)-ih(2)*r2n(1)];
+           %}
+% radial and tangential directions for departure velocity
 Vr1 = 1/eta/sqrt(a_min) * (2*lambda*a_min - lambda - x*eta);
 Vt1 = sqrt(r2_ND/a_min/eta2 * sin(dtheta/2)^2);
-
+% radial and tangential directions for arrival velocity
 Vt2 = Vt1/r2_ND;
 Vr2 = (Vt1 - Vt2)/tan(dtheta/2) - Vr1;
-
-v1_vec = (Vr1*r1_vecND + Vt1*crsprd1')*V;
-v2_vec = (Vr2*r2_uv + Vt2*crsprd2')*V;
+% terminal velocities
+v1_vec = (Vr1*r1_vecND + Vt1*crsprd1)*V;
+v2_vec = (Vr2*r2n + Vt2*crsprd2)*V;
 
 end
 
