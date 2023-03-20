@@ -152,7 +152,7 @@ while abs(checkval) > tol && counter < 1e5
 end
 %}
 %{
-
+% Optimize v1
 % Temporary value
 temp = -1.5*n_1*J2_Earth*(R_Earth/a_1)*cos(incl_p);
 
@@ -290,6 +290,8 @@ function E = Laguerre(M,e)
 u = M + e;
 n  = 5;
 E  = (M*(1-sin(u)) + u*sin(M)) / (1 + sin(M) - sin(u));
+
+% Iterate
 for it1 = 1:5
     num = n*(E-e*sin(E));
     den = (1-e*cos(E)) + sign(1-e*cos(E))*(abs((n-1)^2*(1-e*cos(E))^2 ...
@@ -297,3 +299,4 @@ for it1 = 1:5
     E = num/den;
 end
 end
+

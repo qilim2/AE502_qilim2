@@ -50,6 +50,7 @@ options = odeset('reltol',1.e-8,'abstol',1.e-8,'initialstep',Period0/1000);
 y0 = coe0';
 [t,y] = ode45(@rates,tspan,y0,options);
 
+
 % Save values for each variable
 h = y(:,1);
 e = y(:,2);
@@ -57,10 +58,12 @@ Omega = y(:,3);
 i = y(:,4);
 omega = y(:,5);
 TA = y(:,6);
+a = h.^2./(mu.*(1-e.^2));
+
 
 %% Plotting
 figure(2)
-subplot(5,1,1)
+subplot(6,1,1)
 plot(t/3600,(Omega)/degree2radian)
 title('Right Ascension of the Ascending Node (degrees)')
 xlabel('hours')
@@ -68,7 +71,7 @@ grid on
 grid minor
 axis tight
 
-subplot(5,1,2)
+subplot(6,1,2)
 plot(t/3600,(omega)/degree2radian)
 title('Argument of Periapse (degrees)')
 xlabel('hours')
@@ -76,7 +79,7 @@ grid on
 grid minor
 axis tight
 
-subplot(5,1,3)
+subplot(6,1,3)
 plot(t/3600,h)
 title('Angular Momentum (km^2/s)')
 xlabel('hours')
@@ -84,7 +87,7 @@ grid on
 grid minor
 axis tight
 
-subplot(5,1,4)
+subplot(6,1,4)
 plot(t/3600,e)
 title('Eccentricity')
 xlabel('hours')
@@ -92,9 +95,66 @@ grid on
 grid minor
 axis tight
 
-subplot(5,1,5)
+subplot(6,1,5)
 plot(t/3600,(i)/degree2radian)
 title('Inclination (degrees)')
+xlabel('hours')
+grid on
+grid minor
+axis tight
+
+subplot(6,1,6)
+plot(t/3600,a)
+title('Semimajor Axis (km)')
+xlabel('hours')
+grid on
+grid minor
+axis tight
+
+figure(3)
+subplot(6,1,1)
+plot(t/3600,(Omega - Omega0)/degree2radian)
+title('Change in Right Ascension of the Ascending Node (degrees)')
+xlabel('hours')
+grid on
+grid minor
+axis tight
+
+subplot(6,1,2)
+plot(t/3600,(omega - omega0)/degree2radian)
+title('Change in Argument of Periapse (degrees)')
+xlabel('hours')
+grid on
+grid minor
+axis tight
+
+subplot(6,1,3)
+plot(t/3600,h - h0)
+title('Change in Angular Momentum (km^2/s)')
+xlabel('hours')
+grid on
+grid minor
+axis tight
+
+subplot(6,1,4)
+plot(t/3600,e - e0)
+title('Change in Eccentricity')
+xlabel('hours')
+grid on
+grid minor
+axis tight
+
+subplot(6,1,5)
+plot(t/3600,(i - i0)/degree2radian)
+title('Change in Inclination (degrees)')
+xlabel('hours')
+grid on
+grid minor
+axis tight
+
+subplot(6,1,6)
+plot(t/3600,a - a0)
+title('Change in Semimajor Axis (km)')
 xlabel('hours')
 grid on
 grid minor
