@@ -181,8 +181,8 @@ fprintf('Semimajor-axis, a = %f km\n',a_1);
 fprintf('Eccentricity, e = %f\n',e_1);
 fprintf('Inclination 1, incl = %f rad = %f deg\n',incl_p,rad2deg(incl_p));
 fprintf('Inclination 2, incl = %f rad = %f deg\n',incl_n,rad2deg(incl_n));
-fprintf('Nodal Precession 1, n_prec = %f rad/s = %f deg/s\n',n_prec_11,rad2deg(n_prec_11));
-fprintf('Nodal Precession 2, n_prec = %f rad/s = %f deg/s\n',n_prec_12,rad2deg(n_prec_12));
+fprintf('Nodal Precession 1, n_prec = %e rad/s = %e deg/s\n',n_prec_11,rad2deg(n_prec_11));
+fprintf('Nodal Precession 2, n_prec = %e rad/s = %e deg/s\n',n_prec_12,rad2deg(n_prec_12));
 
 %% Problem 2
 fprintf('\nProblem 2\n');
@@ -218,8 +218,8 @@ fprintf('Semimajor-axis, a = %f km\n',a_2);
 fprintf('Eccentricity, e = %f\n',e_2);
 fprintf('Inclination 1, incl = %f rad = %f deg\n',incl_p,rad2deg(incl_p));
 fprintf('Inclination 2, incl = %f rad = %f deg\n',incl_n,rad2deg(incl_n));
-fprintf('Nodal Precession 1, n_prec = %f rad/s = %f deg/s\n',n_prec_21,rad2deg(n_prec_21));
-fprintf('Nodal Precession 2, n_prec = %f rad/s = %f deg/s\n',n_prec_22,rad2deg(n_prec_22));
+fprintf('Nodal Precession 1, n_prec = %e rad/s = %e deg/s\n',n_prec_21,rad2deg(n_prec_21));
+fprintf('Nodal Precession 2, n_prec = %e rad/s = %e deg/s\n',n_prec_22,rad2deg(n_prec_22));
 
 %% Problem 3
 fprintf('\nProblem 3\n');
