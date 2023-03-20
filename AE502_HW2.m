@@ -7,7 +7,8 @@ format long
 So-called “Molniya orbits” were discovered by Soviet scientists in the 1960s as an
 alternative to geostationary orbits, which, when launched from high latitudes,
 require large launch energies to achieve a high perigee and to change inclination
-in order to orbit over the equator. A long duration stay over a target communications area could be achieved using highly elliptical orbits with an apogee over
+in order to orbit over the equator. A long duration stay over a target communications 
+area could be achieved using highly elliptical orbits with an apogee over
 the desired territory, see Figure 1. The orbit’s name refers to the “lightning”
 speed with which the satellite passes through perigee. In order to minimize
 station keeping fuel expenditure Molniya orbits were designed to be “frozen”
@@ -65,117 +66,6 @@ incl_n = acos(-1/sqrt(5)); %rad
 % Nodal precession
 n_prec_11 = -1.5*n_1*J2_Earth*(R_Earth/a_1)^2*cos(incl_p)/((1-e_1^2)^2); %rad/s
 n_prec_12 = -1.5*n_1*J2_Earth*(R_Earth/a_1)^2*cos(incl_n)/((1-e_1^2)^2); %rad/s
-
-%{
-%-------------------------------------------------------------------------
-% Optimization Version
-% We want the satellite to orbit the Earth three times per day:
-% 24 h * 60 min * 60 s / 3 orbits
-Period_1 = 24*60*60/3; %s
-
-% --- Set up for iteration ---
-% Find inclination from equation (1)
-% Since n, J2, R, a, and e are non-zero, use only the numerator and solve
-% for incl.
-incl_p = acos(1/sqrt(5)); %rad
-
-% Finding semimajor-axis from period equation
-a_1 = (GM_Earth*(Period_1/(2*pi))^2)^(1/3); %km
-
-% Calculate mean motion
-n_1 = 2*pi/Period_1; %rad/s
-
-% Minimum perigee altitude (given)
-alt_p1_min = 600; %km
-r_p1 = alt_p1_min + R_Earth; %km
-
-% Nodal precession
-n_prec = -1.5*n_1*J2_Earth*(R_Earth/a_1)^2*cos(incl_p)/((1-e_1^2)^2); %rad/s
-
-% Try new value
-r_p1_new = r_p1 + 10;
-
-% --- Iterate ---
-% Goal: iterate value of r_p1_min until the nodal precession is very small.
-% Check for convergence by comparing previous value to new value.
-checkval = Inf;
-sign_switch = 1;
-counter = 1; % counter
-counter_vec = [counter];
-tol = 1e-8;
-a = a_1;
-n = n_1;
-
-% Prepare Plot
-% figure(1)
-% hold on
-% grid on
-% plot(counter,sign_switch,counter,checkval,counter,r_p1_new,counter,n_prec);
-% Iterate
-fprintf('\nIterating\n')
-format longE
-while abs(checkval) > tol && counter < 1e5
-        
-    % Finding eccentricity using semimajor-axis
-    e = 1-r_p1_new/a;
-    
-    % Nodal precession
-    n_prec_new = -1.5*n*J2_Earth*(R_Earth/a)^2*cos(incl_p)/((1-e^2)^2); %rad/s
-
-    % Check error
-    checkval_new = n_prec_new - n_prec;
-    if checkval_new > checkval
-        sign_switch = -1;
-    else
-        sign_switch = 1;
-    end
-    
-%     % Save values
-%     sign_switches(counter) = sign_switch;
-%     r_p1s(counter) = r_p1_new;
-%     n_precs(counter) = n_prec_new;
-%     checkvals(counter) = checkval;
-%     
-%     % Plot
-%     plot(counter_vec,sign_switches,counter_vec,checkvals,counter_vec,r_p1s,counter_vec,n_precs);
-    
-    % Dispense
-    fprintf('Counter: %i, Error: %g, Periapse Radius: %e, Nodal Precession: %e\n',counter,checkval_new,r_p1_new,n_prec_new);
-
-    % Update values
-    counter = counter + 1;
-    counter_vec = [counter_vec,counter];
-    n_prec = n_prec_new;
-    r_p1_new = r_p1_new + sign_switch*1000000;
-    checkval = checkval_new;
-
-end
-%}
-%{
-% Optimize v1
-% Temporary value
-temp = -1.5*n_1*J2_Earth*(R_Earth/a_1)*cos(incl_p);
-
-
-ratio = Inf;
-tol = 1e-8;
-r_p = r_p1_min; %start value
-while ratio > tol
-    % Finding eccentricity using semimajor-axis
-    e_1 = 1-r_p/a_1;
-
-    f = temp/(1-e_1^2)^2;
-    df = (4*temp^5*(temp-r_p))/(r_p^3*(r_p-2*temp)^3);
-    
-    ratio = f/df;
-    r_p = r_p - ratio;
-    
-    fprintf('Ratio = %f\n',ratio);
-end
-e_1 = 1-r_p/a_1;
-f = temp/(1-e_1^2)^2;
-fprintf('Optimal r_p = %f km\n with nodal precession rate of %f\n',r_p,f);
-%}
 
 fprintf('Semimajor-axis, a = %f km\n',a_1);
 fprintf('Eccentricity, e = %f\n',e_1);
