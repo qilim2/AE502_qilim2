@@ -18,7 +18,7 @@ function chi = UniversalKepler(mu, DeltaT, r0, vr0, alpha)
 % Requires stumpff.m
 
 err = 1.e-8;
-nMax = 1e5;
+nMax = 1000;
 
 % Start value for chi
 chi = sqrt(mu)*abs(alpha)*DeltaT;

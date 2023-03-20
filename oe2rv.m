@@ -1,4 +1,5 @@
 function [r_vec,v_vec] = oe2rv(h,e,Omega,i,omega,TA,mu)
+% This function is straight from Curtis
 % All angles (Omega, i, omega) must be given in radians.
 
 rp = (h^2/mu) * (1/(1 + e*cos(TA))) * (cos(TA)*[1;0;0] + sin(TA)*[0;1;0]);
@@ -19,10 +20,8 @@ R3_w = [ cos(omega) sin(omega) 0
 %...Equation 4.44:
 Q_pX = R3_W'*R1_i'*R3_w';
 %...Equations 4.46 (r and v are column vectors):
-r = Q_pX*rp;
-v = Q_pX*vp;
-%...Convert r and v into row vectors:
-r_vec = r';
-v_vec = v';
+r_vec = (Q_pX*rp)';
+v_vec = (Q_pX*vp)';
+
 
 end
