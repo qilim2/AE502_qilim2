@@ -14,6 +14,6 @@ for it1 = 1:5
     num = n*(E-e*sin(E));
     den = (1-e*cos(E)) + sign(1-e*cos(E))*(abs((n-1)^2*(1-e*cos(E))^2 ...
         - n*(n-1)*(E-e*sin(E))*(e*sin(E))))^0.5;
-    E = num/den;
+    E = E - num/den;
 end
 end
